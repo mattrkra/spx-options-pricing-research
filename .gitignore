@@ -1,2 +1,4 @@
 # Raw input data
 inputs/
+# Settings
+.vscode/
