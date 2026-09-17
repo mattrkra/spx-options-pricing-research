@@ -2,3 +2,5 @@
 inputs/
 # Settings
 .vscode/
+# pychache
+src/__pycache__/

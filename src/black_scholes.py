@@ -52,4 +52,4 @@ def black_scholes_price(
 
     else:
 
-        print("Invalid option_type")
+        raise ValueError("option_type must be 'call' or 'put'")
