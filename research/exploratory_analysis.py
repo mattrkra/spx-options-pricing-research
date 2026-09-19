@@ -1,3 +1,26 @@
+"""
+SPX Options Pricing Research
+Exploratory Data Analysis & Data Sanity Checks
+
+Purpose:
+    Perform initial exploratory analysis and sanity checks on the raw
+    SPX options dataset before downstream modeling.
+
+Checks performed:
+    - Dataset dimensions and available columns
+    - Key variable identification
+    - Missing-value and quote completeness analysis
+    - Summary statistics for pricing-related variables
+    - Date parsing and dataset coverage
+    - SPX underlying price consistency
+    - Basic visual inspection of the SPX index level over time
+
+This notebook is intended as a lightweight data-quality and sanity-check
+step. Data cleaning and reshaping for downstream analysis are handled
+separately by the reusable functions in src/data.py.
+
+The raw dataset is not included in the repository (see docs).
+"""
 # %%
 import pandas as pd
 import os
