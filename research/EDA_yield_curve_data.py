@@ -1,3 +1,10 @@
+"""
+Treasury Yield Curve EDA / Reconstruction
+
+Loads historical FRED Treasury rates, aligns them with the SPX options
+sample, and reconstructs maturity-specific risk-free rates through
+linear interpolation across observed Treasury maturities.
+"""
 # %%
 import pandas as pd
 import os
