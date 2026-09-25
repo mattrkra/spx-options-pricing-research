@@ -34,7 +34,7 @@ username = os.getlogin()
 input_path = os.path.join(
     r"C:\Users",
     username,
-    "spy-options-pricing",
+    "spx-options-pricing-research",
     "inputs",
     "combined_options_data.csv"
 )

@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.append(
-    rf'C:\Users\{os.getlogin()}\spy-options-pricing\src'
+    rf'C:\Users\{os.getlogin()}\spx-options-pricing-research\src'
 )
 from black_scholes import black_scholes_price
 

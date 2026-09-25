@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+
 def load_dividend_yield(
     filepath: str = None,
     start_date: pd.Timestamp = None,
@@ -29,7 +30,7 @@ def load_dividend_yield(
         filepath = os.path.join(
             r"C:\Users",
             username,
-            "spy-options-pricing",
+            "spx-options-pricing-research",
             "inputs",
             "dividend_yields.csv",
         )
@@ -103,7 +104,7 @@ def load_treasury_rates(
         filepath = os.path.join(
             r"C:\Users",
             username,
-            "spy-options-pricing",
+            "spx-options-pricing-research",
             "inputs",
             "fredgraph.csv",
         )

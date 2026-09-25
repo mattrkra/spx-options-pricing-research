@@ -13,7 +13,7 @@ import sys
 import numpy as np
 
 sys.path.append(
-    rf'C:\Users\{os.getlogin()}\spy-options-pricing\src'
+    rf'C:\Users\{os.getlogin()}\spx-options-pricing-research\src'
 )
 import clean_options_data as cod
 
