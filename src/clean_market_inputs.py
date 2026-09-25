@@ -253,6 +253,11 @@ def join_market_inputs(
         validate="many_to_one",
     )
 
+    # Carry the most recently observed monthly dividend yield
+    # forward to dates without a new observation.
+    options = options.sort_values("QUOTE_DATE").reset_index(drop=True)
+    options["q"] = options["q"].ffill()
+
     # Remove option observations from dates without a complete
     # Treasury curve or dividend-yield input.
     options = options.dropna(
@@ -278,10 +283,10 @@ def join_market_inputs(
 
 def _interpolate_risk_free_rate(options_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Interpolate a contract-specific risk-free rate from the Treasury
-    constant-maturity curve joined to each option observation.
+    Interpolate a contract-specific risk-free rate from the
+    Treasury constant-maturity curve joined to each option.
 
-    Treasury inputs:
+    Treasury maturities:
         DGS1MO = 1 month
         DGS3MO = 3 months
         DGS6MO = 6 months
@@ -289,23 +294,12 @@ def _interpolate_risk_free_rate(options_df: pd.DataFrame) -> pd.DataFrame:
         DGS2   = 2 years
         DGS3   = 3 years
 
-    The Treasury rates are assumed to be in percentage points and are
-    converted to decimal form for use in Black-Scholes.
+    Treasury yields are converted from percentage points to decimals.
 
-    The option's time to expiration is calculated as DTE / 365.
-
-    Parameters
-    ----------
-    options_df : pd.DataFrame
-        Options data containing DTE and the joined Treasury rate columns.
-
-    Returns
-    -------
-    pd.DataFrame
-        Copy of the input DataFrame with a contract-specific `r` column.
+    Option time to expiration is calculated as DTE / 365.
     """
 
-    options = options_df.copy()
+    options = options_df.copy().reset_index(drop=True)
 
     rate_columns = [
         "DGS1MO",
@@ -316,7 +310,6 @@ def _interpolate_risk_free_rate(options_df: pd.DataFrame) -> pd.DataFrame:
         "DGS3",
     ]
 
-    # Treasury maturities expressed in years.
     maturity_grid = np.array([
         1 / 12,
         3 / 12,
@@ -326,22 +319,20 @@ def _interpolate_risk_free_rate(options_df: pd.DataFrame) -> pd.DataFrame:
         3.0,
     ])
 
-    # Convert option time to expiration from days to years.
     option_maturities = options["DTE"].to_numpy(dtype=float) / 365
 
-    # Store interpolated rates here.
     interpolated_rates = np.full(len(options), np.nan)
 
-    # Interpolate separately for each quote date because the Treasury
-    # curve changes from day to day.
     for quote_date, index in options.groupby("QUOTE_DATE").groups.items():
 
-        date_rates = options.loc[index, rate_columns].iloc[0].to_numpy(dtype=float)
+        date_rates = (
+            options.loc[index, rate_columns]
+            .iloc[0]
+            .to_numpy(dtype=float)
+        )
 
-        # Convert percentage-point Treasury yields to decimals.
         date_rates = date_rates / 100
 
-        # Interpolate each option's maturity using that day's curve.
         interpolated_rates[index] = np.interp(
             option_maturities[index],
             maturity_grid,
