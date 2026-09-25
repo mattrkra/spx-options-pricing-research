@@ -13,8 +13,7 @@ def black_scholes_vega(S, K, T, r, sigma, q):
     """
     Calculate Black-Scholes vega.
 
-    Returns the change in option price for a one-unit change
-    in volatility.
+    Inputs may be scalars or NumPy arrays.
     """
 
     d1 = (
@@ -22,7 +21,12 @@ def black_scholes_vega(S, K, T, r, sigma, q):
         / (sigma * np.sqrt(T))
     )
 
-    return S * np.exp(-q * T) * norm.pdf(d1) * np.sqrt(T)
+    return (
+        S
+        * np.exp(-q * T)
+        * norm.pdf(d1)
+        * np.sqrt(T)
+    )
 
 
 def implied_volatility(
