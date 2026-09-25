@@ -8,6 +8,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 sys.path.append(
     rf'C:\Users\{os.getlogin()}\spx-options-pricing-research\src'
 )
@@ -200,3 +201,46 @@ pivot["iv_diff"] = pivot["call"] - pivot["put"]
 
 print(pivot["iv_diff"].describe())
 # %%
+# %%
+
+# Plot the observed SPX implied-volatility smile for a
+# randomly selected tradig day and maturity.
+
+rng = np.random.default_rng(98)
+
+random_date = pd.Timestamp(
+    rng.choice(options_df["QUOTE_DATE"].unique())
+)
+
+day = options_df[
+    options_df["QUOTE_DATE"] == random_date
+].copy()
+
+random_dte = rng.choice(day["DTE"].unique())
+
+smile = day[
+    day["DTE"] == random_dte
+].copy()
+
+print(f"Selected date: {random_date.date()}")
+print(f"Selected DTE: {random_dte:.2f}")
+
+plt.figure(figsize=(10, 6))
+
+for option_type, group in smile.groupby("OPTION_TYPE"):
+    plt.scatter(
+        group["STRIKE"],
+        group["IV_obs"],
+        label=option_type.capitalize(),
+        alpha=0.7,
+    )
+
+plt.xlabel("Strike")
+plt.ylabel("Implied Volatility")
+plt.title(
+    f"Observed SPX Implied Volatility Smile\n"
+    f"{random_date.date()} | DTE = {random_dte:.0f}"
+)
+plt.legend()
+plt.grid(True)
+plt.show()
