@@ -145,3 +145,13 @@ options_df = options_df[
 print(options_df.shape)
 print(options_df["IV_obs"].describe())
 # %%
+# Check the number of usable IV observations per day
+# before fitting daily volatility surfaces.
+daily_counts = (
+    options_df
+    .groupby("QUOTE_DATE")
+    .size()
+)
+
+print(daily_counts.describe())
+print(daily_counts.sort_values().head(20))
