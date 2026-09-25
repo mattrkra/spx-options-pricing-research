@@ -36,6 +36,20 @@ print(options_df[["DTE", "r", "q"]].describe())
 print(options_df[["r", "q"]].isna().sum())
 
 # %%
+# Calculate Vega at the solver's initial volatility guess.
+# Low initial Vega indicates poor numerical sensitivity to volatility.
+
+# Calculate Black-Scholes Vega at the initial volatility guess.
+options_df["vega_initial"] = iv.black_scholes_vega(
+    S=options_df["UNDERLYING_LAST"],
+    K=options_df["STRIKE"],
+    T=options_df["DTE"] / 365,
+    r=options_df["r"],
+    sigma=0.20,
+    q=options_df["q"],
+)
+
+# %%
 # Running the vectorized IV solver
 options_df["IV_obs"] = iv.implied_volatility_vectorized(
     S=options_df["UNDERLYING_LAST"],
@@ -48,7 +62,7 @@ options_df["IV_obs"] = iv.implied_volatility_vectorized(
 )
 
 # %%
-# Seeing how many failed.
+# Seeing how many failed
 print(options_df["IV_obs"].describe())
 
 print("Missing IV:", options_df["IV_obs"].isna().sum())
@@ -155,3 +169,34 @@ daily_counts = (
 
 print(daily_counts.describe())
 print(daily_counts.sort_values().head(20))
+
+# %%
+# Inspect the cross-sectional strike, maturity, and IV coverage
+# for a representative trading day.
+
+day = options_df[options_df["QUOTE_DATE"] == options_df["QUOTE_DATE"].iloc[0]].copy()
+
+print(day[["STRIKE", "DTE", "IV_obs"]].describe())
+print(day[["STRIKE", "DTE", "IV_obs"]].head())  
+
+# Check whether multiple observations occur at the same
+# strike-maturity coordinate due to call and put contracts.
+day.groupby(["STRIKE", "DTE"]).size().describe()
+
+# Identify whether each strike-maturity coordinate contains
+# a call, a put, or both.
+day.groupby(["STRIKE", "DTE"])["OPTION_TYPE"].unique().head(10)
+
+# %%
+# Compare call and put implied volatilities at matching
+# strike-maturity coordinates.
+pivot = day.pivot_table(
+    index=["STRIKE", "DTE"],
+    columns="OPTION_TYPE",
+    values="IV_obs"
+)
+
+pivot["iv_diff"] = pivot["call"] - pivot["put"]
+
+print(pivot["iv_diff"].describe())
+# %%
