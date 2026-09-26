@@ -14,9 +14,9 @@ moneyness, or how much data is available?
 
 1. Clean and reshape historical SPX option quotes
 2. Build market inputs (interpolated Treasury rates, dividend yields)
-3. Recover implied volatility via Newton-Raphson inversion of Black-Scholes, see [docs/iv_calibration.md](docs/iv_calibration.md)
+3. Recover implied volatility via Newton-Raphson inversion of Black-Scholes, see [docs/IV_calibration.md](docs/IV_calibration.md)
 4. Construct log-moneyness and total variance per contract
-5. Calibrate SVI and a cubic spline separately for each quote date and maturity, see [docs/iv_mapping.md](docs/iv_mapping.md)
+5. Calibrate SVI and a cubic spline separately for each quote date and maturity, see [docs/IV_mapping.md](docs/IV_mapping.md)
 6. Hold out a random 20% of each smile's observations, calibrate both models on the remaining 80%, and evaluate their predictions on the held-out observations
 7. Compare out-of-sample error across maturity, sample size, and time
 
