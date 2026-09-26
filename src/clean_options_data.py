@@ -8,27 +8,12 @@ def clean_options_data(
     """
     Load, clean, and reshape raw SPX options data for downstream analysis.
 
-    If no filepath is provided, the default input file is loaded from the
-    project's inputs directory.
-
     Processing steps:
-        1. Load the raw options dataset.
-        2. Keep the underlying, date, expiration, strike, and quote fields
-           required for option pricing and implied-volatility estimation.
-        3. Convert quote and expiration dates from DD-MM-YYYY strings
-           to pandas datetime objects.
-        4. Convert required numeric fields to numeric dtype.
-        5. Reshape call and put quotes from wide format into long format,
-           creating one observation per option contract.
-        6. Calculate the bid-ask midpoint for each option.
-        7. Remove observations with missing required quote information.
-        8. Remove observations with invalid values required for pricing.
-        9. Sort observations by quote date, expiration date, strike,
-           and option type.
-
-    Parameters:
-        filepath: Path to the raw options CSV. If None, the default
-            project input file is used.
+    - Load and reshape option quotes
+    - Parse dates and numeric fields
+    - Calculate bid-ask midpoints
+    - Remove invalid observations
+    - Sort the cleaned data
 
     Returns:
         A cleaned long-format DataFrame containing individual call and
@@ -62,7 +47,6 @@ def clean_options_data(
 
     options = options[required_columns].copy()
 
-    # Convert dates
     options["QUOTE_DATE"] = pd.to_datetime(
         options["QUOTE_DATE"],
         format="%d-%m-%Y",
@@ -73,7 +57,6 @@ def clean_options_data(
         format="%d-%m-%Y",
     )
 
-    # Convert numeric fields
     numeric_columns = [
         "UNDERLYING_LAST",
         "DTE",
@@ -89,7 +72,6 @@ def clean_options_data(
         errors="coerce",
     )
 
-    # Create call observations
     calls = options[
         [
             "QUOTE_DATE",
@@ -111,7 +93,6 @@ def clean_options_data(
 
     calls["OPTION_TYPE"] = "call"
 
-    # Create put observations
     puts = options[
         [
             "QUOTE_DATE",
@@ -133,18 +114,16 @@ def clean_options_data(
 
     puts["OPTION_TYPE"] = "put"
 
-    # Combine calls and puts
     options = pd.concat(
         [calls, puts],
         ignore_index=True,
     )
 
-    # Calculate market midpoint
+    # Market midpoint used as option price
     options["MID"] = (
         options["BID"] + options["ASK"]
     ) / 2
 
-    # Remove observations missing required pricing information
     options = options.dropna(
         subset=[
             "QUOTE_DATE",
@@ -158,7 +137,6 @@ def clean_options_data(
         ]
     )
 
-    # Remove invalid observations
     options = options[
         (options["UNDERLYING_LAST"] > 0)
         & (options["STRIKE"] > 0)
@@ -169,7 +147,6 @@ def clean_options_data(
         & (options["MID"] > 0)
     ]
 
-    # Sort consistently
     options = options.sort_values(
         [
             "QUOTE_DATE",

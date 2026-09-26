@@ -11,10 +11,6 @@ def load_dividend_yield(
     """
     Load and prepare historical S&P 500 dividend-yield data.
 
-    The dividend yield is converted from percentage points to decimal
-    form and the historical point-in-time yield is retained as the
-    project's baseline dividend-yield assumption.
-
     Parameters:
         filepath: Path to the dividend-yield CSV. If None, the default
             project input file is used.
@@ -47,7 +43,6 @@ def load_dividend_yield(
         errors="coerce",
     )
 
-    # Convert percentage yield to decimal form.
     dividends["q"] = dividends["Yield"] / 100
 
     dividends = dividends[
@@ -84,9 +79,6 @@ def load_treasury_rates(
 ) -> pd.DataFrame:
     """
     Load and prepare historical FRED Treasury constant-maturity rates.
-
-    The six Treasury maturities used in the project are retained as
-    inputs for later maturity-specific risk-free-rate interpolation.
 
     Parameters:
         filepath: Path to the FRED Treasury-rate CSV. If None, the
@@ -156,12 +148,13 @@ def load_treasury_rates(
             rates["QUOTE_DATE"] <= end_date
         ]
 
-    # Retain only dates with a complete Treasury curve.
+    # Retain only dates with complete Treasury data
     rates = rates.dropna(
         subset=rate_columns
     ).reset_index(drop=True)
 
     return rates
+
 
 def join_market_inputs(
     options_df: pd.DataFrame,
@@ -192,11 +185,11 @@ def join_market_inputs(
 
     options = options_df.copy()
 
-    # Determine the date range of the options dataset.
+    # Determine the date range of the options dataset
     options_start = options["QUOTE_DATE"].min()
     options_end = options["QUOTE_DATE"].max()
 
-    # Load market inputs if they were not supplied.
+    # Determine the date range of the options dataset
     if rates_df is None:
         rates_df = load_treasury_rates(
             start_date=options_start,
@@ -209,7 +202,7 @@ def join_market_inputs(
             end_date=options_end,
         )
 
-    # Treasury maturities used for risk-free-rate interpolation.
+    # Treasury maturities used for risk-free-rate interpolation
     rate_columns = [
         "DGS1MO",
         "DGS3MO",
@@ -219,7 +212,6 @@ def join_market_inputs(
         "DGS3",
     ]
 
-    # Keep only the market-input fields required downstream.
     rates = rates_df[
         ["QUOTE_DATE"] + rate_columns
     ].copy()
@@ -228,7 +220,7 @@ def join_market_inputs(
         ["QUOTE_DATE", "q"]
     ].copy()
 
-    # Ensure one market-input observation per quote date.
+    # Ensure one market-input observation per quote date
     rates = rates.drop_duplicates(
         subset="QUOTE_DATE"
     )
@@ -237,7 +229,6 @@ def join_market_inputs(
         subset="QUOTE_DATE"
     )
 
-    # Join Treasury rates onto option observations.
     options = options.merge(
         rates,
         how="left",
@@ -245,7 +236,6 @@ def join_market_inputs(
         validate="many_to_one",
     )
 
-    # Join dividend yield onto option observations.
     options = options.merge(
         dividends,
         how="left",
@@ -254,21 +244,16 @@ def join_market_inputs(
     )
 
     # Carry the most recently observed monthly dividend yield
-    # forward to dates without a new observation.
     options = options.sort_values("QUOTE_DATE").reset_index(drop=True)
     options["q"] = options["q"].ffill()
 
-    # Remove option observations from dates without a complete
-    # Treasury curve or dividend-yield input.
+    # Remove observations without complete market inputs
     options = options.dropna(
         subset=rate_columns + ["q"]
     ).copy()
 
-    # Convert the date-level Treasury curve into a
-    # contract-specific risk-free rate.
     options = _interpolate_risk_free_rate(options)
 
-    # Sort consistently after joining market inputs.
     options = options.sort_values(
         [
             "QUOTE_DATE",
@@ -285,6 +270,9 @@ def _interpolate_risk_free_rate(options_df: pd.DataFrame) -> pd.DataFrame:
     """
     Interpolate a contract-specific risk-free rate from the
     Treasury constant-maturity curve joined to each option.
+
+    Note: This is not a perfect capture of future market expectations.
+    See docs/A1_limitations.md.
 
     Treasury maturities:
         DGS1MO = 1 month
