@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares
+from scipy.interpolate import CubicSpline
 
 sys.path.append(
     rf"C:\Users\{os.getlogin()}\spx-options-pricing-research\src"
@@ -19,7 +20,6 @@ sys.path.append(
 import clean_market_inputs as cmi
 import clean_options_data as cod
 import implied_vol as iv
-
 
 # %%
 # Load and prepare the cleaned SPX options data and
@@ -86,6 +86,7 @@ options_df["total_variance"] = (
 
 # %%
 # Confirm that the SVI input variables contain no missing values
+# and inspect input variables
 
 print(
     options_df[
@@ -96,10 +97,6 @@ print(
         ]
     ].isna().sum()
 )
-
-
-# %%
-# Inspect the resulting SVI input variables
 
 print(
     options_df[
@@ -280,7 +277,6 @@ svi_fit = svi_total_variance(
     *svi_result.x,
 )
 
-
 # %%
 # Plot observed total variance and the fitted SVI smile
 
@@ -318,3 +314,63 @@ plt.axvline(
 plt.legend()
 plt.grid(True)
 plt.show()
+
+# %%
+# Fitting a cubic spline to the observed implied-volatility smile
+
+spline_data = (
+    smile[
+        [
+            "log_moneyness",
+            "IV_obs",
+        ]
+    ]
+    .dropna()
+    .groupby("log_moneyness", as_index=False)["IV_obs"]
+    .mean()
+    .sort_values("log_moneyness")
+)
+
+spline = CubicSpline(
+    spline_data["log_moneyness"].to_numpy(),
+    spline_data["IV_obs"].to_numpy(),
+)
+
+spline_fit = spline(k_grid)
+
+plt.figure(figsize=(10, 6))
+
+for option_type, group in smile.groupby("OPTION_TYPE"):
+    plt.scatter(
+        group["log_moneyness"],
+        group["IV_obs"],
+        label=f"{option_type.capitalize()} observed",
+        alpha=0.6,
+    )
+
+plt.plot(
+    k_grid,
+    spline_fit,
+    label="Cubic spline fit",
+    linewidth=2,
+)
+
+plt.xlabel("Log-moneyness")
+plt.ylabel("Implied volatility")
+
+plt.title(
+    f"SPX Implied-Volatility Smile with Cubic Spline Fit\n"
+    f"{random_date.date()} | DTE = {selected_dte:.0f}"
+)
+
+plt.axvline(
+    0,
+    linestyle="--",
+    linewidth=1,
+)
+
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# %%
