@@ -16,7 +16,7 @@ a+b\left[
 \right]
 $$
 
-where \(k=\ln(K/F)\) is log-moneyness and \(w(k)=IV^2T\) is total variance.
+where $k=\ln(K/F)$ is log-moneyness and $w(k)=IV^2T$ is total variance.
 
 The five SVI parameters are calibrated to the observed total variance for each quote date and maturity. SVI provides a compact representation of the volatility smile using only five parameters.
 

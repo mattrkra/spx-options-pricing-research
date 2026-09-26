@@ -9,11 +9,11 @@ Implied volatility is recovered from observed SPX option prices using the Black-
 For calls and puts:
 
 $$
-C = S e^{-qT}N(d_1) - K e^{-rT}N(d_2)
+C = S e^{-qT} N(d_1) - K e^{-rT} N(d_2)
 $$
 
 $$
-P = K e^{-rT}N(-d_2) - S e^{-qT}N(-d_1)
+P = K e^{-rT} N(-d_2) - S e^{-qT} N(-d_1)
 $$
 
 where:
