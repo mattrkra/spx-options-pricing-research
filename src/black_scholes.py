@@ -4,10 +4,7 @@ from scipy.stats import norm
 
 def black_scholes_price(S, K, T, r, sigma, q, option_type):
     """
-    Calculate Black-Scholes prices for European options.
-
-    Inputs may be scalars or NumPy arrays. All array inputs must be
-    broadcastable to a common shape.
+    Calculate Black-Scholes prices for scalars or NumPy arrays.
     """
 
     d1 = (
