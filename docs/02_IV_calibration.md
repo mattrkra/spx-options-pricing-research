@@ -60,11 +60,7 @@ The vectorized implementation applies the updates across the full option dataset
 Recovered IVs are substituted back into BSM to reconstruct the option price:
 
 $$
-\text{Price Error}
-=
-P_{BSM}(\widehat{\sigma})
--
-P_{\text{market}}
+\text{Price Error} = P_{BSM}(\widehat{\sigma}) - P_{\text{market}}
 $$
 
 Small reconstruction errors confirm that the numerical inversion is working as intended. The recovered IVs are then used in the volatility-surface analysis.
