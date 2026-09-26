@@ -48,15 +48,7 @@ $$
 Because the BSM pricing equation cannot be directly inverted for volatility, Newton-Raphson is used:
 
 $$
-\sigma_{n+1}
-=
-\sigma_n
--
-\frac{
-P_{BSM}(\sigma_n)-P_{\text{market}}
-}{
-Vega(\sigma_n)
-}
+\sigma_{n+1} = \sigma_n - \frac{P_{BSM}(\sigma_n) - P_{\text{market}}}{Vega(\sigma_n)}
 $$
 
 Vega provides the derivative needed for each update. The solver iterates until the pricing error falls below the specified tolerance or the observation fails a numerical validity check.

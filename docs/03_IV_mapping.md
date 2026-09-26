@@ -9,11 +9,7 @@ The recovered implied volatilities are used to model the SPX volatility smile se
 The Stochastic Volatility Inspired (SVI) parameterization models total implied variance as a function of log-moneyness:
 
 $$
-w(k)
-=
-a+b\left[
-\rho(k-m)+\sqrt{(k-m)^2+\sigma^2}
-\right]
+w(k) = a + b\left[\rho(k-m) + \sqrt{(k-m)^2 + \sigma^2}\right]
 $$
 
 where $k=\ln(K/F)$ is log-moneyness and $w(k)=IV^2T$ is total variance.
