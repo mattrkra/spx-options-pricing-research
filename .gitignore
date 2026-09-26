@@ -1,5 +1,7 @@
 # Raw input data
 inputs/
+# Output data
+outputs/
 # Settings
 .vscode/
 # pychache
